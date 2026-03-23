@@ -238,12 +238,14 @@ sim_pop_n <- function(p,i,paramS, paramD,init_size = 1159, n = 150){
 #' @param th experimental times spent non-smurf
 #' @param init_size population size, default 1159
 #' @param N population size for simulation, default 1159
-#' @param n time of simulation is n*10, default is 150
 #' @param n_rep number of simulations
+#' @param array, array of times for simulation, default is (0:149)*10
 #' @returns nothing, but plots the experimental non-smurf survival function and 
 #' empirical 95 CI
-NS_CI <- function(p,i, paramS, paramD,th,init_size =1159, n = 150,nrep=100){
+NS_CI <- function(p,i, paramS, paramD,th,init_size =1159,nrep=100, array = NA){
   #initializing population 
+  if(any(is.na(array))){array = (0:149)*10}
+  n = length(array)
   pop_init <- population(data.frame( birth = rep(0, init_size), 
                                      death = NA, smurf = rep(FALSE,init_size), 
                                      time_smurf = rep(0, init_size)),id = TRUE)
@@ -272,9 +274,9 @@ NS_CI <- function(p,i, paramS, paramD,th,init_size =1159, n = 150,nrep=100){
   for (j in 1:nrep){#simulating nrep populations
     sim_out <- popsim(model = birth_death,
                       initial_population = pop_init,
-                      events_bounds = c('death' = 0.2, 'swap' = 1),
+                      events_bounds = c('death' = 1, 'swap' = 1),
                       parameters = params,
-                      time = (0:((n-1)))*10) #simulation
+                      time = array) #simulation
     pop_out1 <- sim_out$population
     nsmurf_num1 <- lapply(1:(n-1), function (i) (
       (sum(pop_out1[[i]]$smurf == FALSE))))
@@ -299,11 +301,13 @@ NS_CI <- function(p,i, paramS, paramD,th,init_size =1159, n = 150,nrep=100){
 #' @param th experimental time spent smurf
 #' @param init_size population size, default 1159
 #' @param N population size for simulation, default 1159
-#' @param n time of simulation is n*10, default is 150
 #' @param n_rep number of simulations
+#' @param array, array of times for simulation, default is (0:149)*10
 #' @returns nothing, but plots the experimental survival function and the 95 CI
-S_CI <- function(p,i, paramS, paramD,th,init_size =1159, n = 150,nrep = 100){
+S_CI <- function(p,i, paramS, paramD,th,init_size =1159, nrep = 100, array = NA){
   #initializing population 
+  if(any(is.na(array))){array = (0:149)*10}
+  n = length(array)
   pop_init <- population(data.frame( birth = rep(0, init_size), 
                                      death = NA, smurf = rep(FALSE,init_size), 
                                      time_smurf = rep(0, init_size)),id = TRUE)
@@ -332,9 +336,9 @@ S_CI <- function(p,i, paramS, paramD,th,init_size =1159, n = 150,nrep = 100){
   for (j in 1:nrep){#simulating nrep populations
     sim_out <- popsim(model = birth_death,
                       initial_population = pop_init,
-                      events_bounds = c('death' = 0.2, 'swap' = 1),
+                      events_bounds = c('death' = 1, 'swap' = 1),
                       parameters = params,
-                      time = (0:((n-1)))*10) #simulation
+                      time = array) #simulation
     pop_out1 <- sim_out$population
     times_smurf = (pop_out1[[n-1]]$death -  pop_out1[[n-1]]$time_smurf)
     t = sort(times_smurf)
